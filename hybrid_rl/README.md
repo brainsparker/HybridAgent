@@ -22,15 +22,15 @@ A parquet file with the columns `ability` (`math` or `qa`), `reward_model` (`{"g
 ## Training
 
 ```bash
-TASK=math MODEL=<HybridSFT checkpoint dir or HF id> DATA=hf://togethercomputer/HybridAgent-HybridRL/math.parquet \
+TASK=search MODEL=<HybridSFT checkpoint dir or HF id> DATA=hf://togethercomputer/HybridAgent-HybridRL/search.parquet \
     NNODES=4 NODE_RANK=<this node> MASTER_ADDR=<rank-0 host> bash scripts/run_hybrid_rl.sh
 ```
 
 Run the same command on every node with its `NODE_RANK`. Rollouts are data-parallel over questions. Both tools are live during training, so `TAVILY_API_KEY` is required.
 
-Recommended hardware: 32 H100 80 GB GPUs (4 nodes × 8), which is the launcher default (`NNODES=4`, `NPROC_PER_NODE=8`); each rank then rolls out 2 prompts × 8 trajectories per step. Other world sizes work as long as `--prompts_per_step` is divisible by the number of GPUs, with proportionally more rollouts per GPU.
+Recommended hardware: 32 GPUs (4 nodes × 8), which is the launcher default (`NNODES=4`, `NPROC_PER_NODE=8`); each rank then rolls out 2 prompts × 8 trajectories per step. Other world sizes work as long as `--prompts_per_step` is divisible by the number of GPUs, with proportionally more rollouts per GPU.
 
-`TASK=search` selects the agentic search setting. The per-task defaults (training length, tool-call cap, per-trajectory budget, latent-span bounds, …) live in `hybrid_rl/config.py`, can be overridden on the command line, and are listed by `python -m hybrid_rl.train --help`.
+`TASK=math` selects the deep-reasoning setting (`math.parquet`). The per-task defaults (training length, tool-call cap, per-trajectory budget, latent-span bounds, …) live in `hybrid_rl/config.py`, can be overridden on the command line, and are listed by `python -m hybrid_rl.train --help`.
 
 ## Output
 

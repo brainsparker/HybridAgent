@@ -19,7 +19,7 @@ bash scripts/run_batch_inference.sh 8 --model <ckpt> --input questions.jsonl --o
 which starts one process per GPU, shards the questions round-robin and merges the shards.
 `--resume` skips samples already present in the output file.
 
-## Settings
+## Configs
 
 | Option | Default | Meaning |
 |---|---|---|

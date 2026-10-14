@@ -24,8 +24,6 @@ from transformers import PreTrainedTokenizerBase
 from hybrid_agent.constants import ENTRY_ANCHOR, EXIT_ANCHOR
 from hybrid_agent.prompts import SYSTEM_PROMPT
 
-# CE weight of the exit anchor `</latent>`: the single exit decision per span is
-# weighted against the many ordinary text targets.
 EXIT_ANCHOR_CE_WEIGHT = 2.0
 
 THINK_PREFILL = "<think>\n"

@@ -4,8 +4,8 @@
 
 **LLM Agents that Think in latent space, Act through text**
 
-[![arXiv](https://img.shields.io/badge/arXiv-paper-b31b1b.svg)](https://arxiv.org/abs/XXXX.XXXXX)
-[![Models](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-models%20%26%20data-yellow.svg)](#-released-checkpoints-and-data)
+[![arXiv](https://img.shields.io/badge/arXiv-paper-b31b1b.svg)](https://arxiv.org/abs/2610.18861)
+[![Models](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-models%20%26%20data-yellow.svg)](https://huggingface.co/collections/togethercomputer/hybridagent)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 [Jiaru Zou](https://scholar.google.com/citations?user=GzLTey4AAAAJ)<sup>1,2</sup>, [Yunzhe Qi](https://scholar.google.com/citations?user=Gt17_A0AAAAJ)<sup>3,4</sup>, [Sirui Chen](https://csr16.github.io/)<sup>3</sup>, [Federico Bianchi](https://federicobianchi.io/)<sup>2</sup>, [Shang Zhu](https://shang-zhu.github.io/)<sup>2</sup>, [Pan Lu](https://lupantech.github.io/)<sup>1</sup>, [Jingrui He](https://www.hejingrui.org/)<sup>3</sup>, [James Zou](https://www.james-zou.com/)<sup>1,2</sup>
@@ -44,14 +44,14 @@ cp .env.example .env   # TAVILY_API_KEY for the search tool
 
 ## 🤗 Released models and data
 
-Checkpoints and data load from a local directory or directly from the Hugging Face Hub.
+Checkpoints and data load from a local directory or directly from the Hugging Face Hub. See the [HybridAgent collection](https://huggingface.co/collections/togethercomputer/hybridagent).
 
 | Artifact | Description | Hugging Face |
 |---|---|---|
-| HybridAgent-8B-Agentic | Qwen3-8B-Base → HybridSFT → HybridRL on agentic reasoning tasks | `togethercomputer/HybridAgent-8B-Agentic` |
-| HybridAgent-14B-Agentic | Qwen3-14B-Base → HybridSFT → HybridRL on agentic reasoning tasks | `togethercomputer/HybridAgent-14B-Agentic` |
-| HybridAgent-HybridSFT-v1 / -v2 | HybridSFT training sets: hybrid trajectories (`train.jsonl`), v1 and the upgraded v2 | `togethercomputer/HybridAgent-HybridSFT-v1`, `togethercomputer/HybridAgent-HybridSFT-v2` |
-| HybridAgent-HybridRL | HybridRL training sets: deep reasoning (`math.parquet`) and agentic search (`search.parquet`) | `togethercomputer/HybridAgent-HybridRL` |
+| HybridAgent-8B-Agentic | Qwen3-8B-Base → HybridSFT → HybridRL on agentic reasoning tasks | [`togethercomputer/HybridAgent-8B-Agentic`](https://huggingface.co/togethercomputer/HybridAgent-8B-Agentic) |
+| HybridAgent-14B-Agentic | Qwen3-14B-Base → HybridSFT → HybridRL on agentic reasoning tasks | [`togethercomputer/HybridAgent-14B-Agentic`](https://huggingface.co/togethercomputer/HybridAgent-14B-Agentic) |
+| HybridAgent-HybridSFT-v1 / -v2 | HybridSFT training sets: hybrid trajectories (`train.jsonl`), v1 and the upgraded v2 | [`togethercomputer/HybridAgent-HybridSFT-v1`](https://huggingface.co/datasets/togethercomputer/HybridAgent-HybridSFT-v1), [`togethercomputer/HybridAgent-HybridSFT-v2`](https://huggingface.co/datasets/togethercomputer/HybridAgent-HybridSFT-v2) |
+| HybridAgent-HybridRL | HybridRL training sets: deep reasoning (`math.parquet`) and agentic search (`search.parquet`) | [`togethercomputer/HybridAgent-HybridRL`](https://huggingface.co/datasets/togethercomputer/HybridAgent-HybridRL) |
 
 *Note:* Each model directory holds the backbone in Hugging Face format together with the HybridLink weights (`adapter.pt`, `adapter_config.json`).
 
@@ -109,25 +109,27 @@ MODEL=Qwen/Qwen3-8B-Base DATA=togethercomputer/HybridAgent-HybridSFT-v2 OUT=outp
     bash scripts/run_hybrid_sft.sh all
 ```
 
-Runs the three HybridSFT stages in sequence: format activation, HybridLink activation and self-conditioned HybridSFT. Recommended hardware: 8 or 16 H100 80 GB GPUs; the provided configs are for one node with 8 GPUs, and on 16 GPUs across two nodes `--grad_accum 1` keeps the same effective batch of 16. See [`hybrid_sft/`](hybrid_sft/).
+Train HybridSFT on the curated hybrid trajectories (format activation, HybridLink activation and self-conditioned training). Recommended hardware: 8 or 16 GPUs. See [`hybrid_sft/`](hybrid_sft/).
 
 ### HybridRL
 
 ```bash
-TASK=math MODEL=outputs/hybrid_sft/self_conditioned DATA=hf://togethercomputer/HybridAgent-HybridRL/math.parquet \
+TASK=search MODEL=outputs/hybrid_sft/self_conditioned DATA=hf://togethercomputer/HybridAgent-HybridRL/search.parquet \
     NNODES=4 NODE_RANK=<node> MASTER_ADDR=<rank-0 host> bash scripts/run_hybrid_rl.sh
 ```
 
-Trains HybridRL on the deep-reasoning tasks; `TASK=search` switches to the agentic search setting. Recommended hardware: 32 H100 80 GB GPUs (4 nodes × 8), the launcher default; the rollout batch is split across ranks, so `--prompts_per_step` must be divisible by the number of GPUs. See [`hybrid_rl/`](hybrid_rl/).
+Train HybridRL on the agentic search tasks. Recommended hardware: 32 GPUs (4 nodes × 8), the launcher default. See [`hybrid_rl/`](hybrid_rl/).
 
 ## 📚 Citation
 
 ```bibtex
-@article{zou2026hybrid,
-  title   = {Hybrid Reasoning Agents},
-  author  = {Zou, Jiaru and Qi, Yunzhe and Chen, Sirui and Bianchi, Federico and Zhu, Shang and
-             Lu, Pan and He, Jingrui and Zou, James},
-  journal = {arXiv preprint arXiv:XXXX.XXXXX},
-  year    = {2026}
+@misc{zou2026hybridagent,
+      title={Hybrid Reasoning Agents}, 
+      author={Jiaru Zou and Yunzhe Qi and Sirui Chen and Federico Bianchi and Shang Zhu and Pan Lu and Jingrui He and James Zou},
+      year={2026},
+      eprint={2610.18861},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/2610.18861}, 
 }
 ```
