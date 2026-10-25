@@ -13,6 +13,7 @@ from typing import Dict, Optional
 from .base import BaseTool
 from .python_tool import PythonTool
 from .search_tool import TavilySearchTool
+from .youcom_search_tool import YouComSearchTool
 
 logger = logging.getLogger(__name__)
 
@@ -97,11 +98,23 @@ def build_tool_executor(
     *,
     require_search: bool = True,
 ) -> ToolExecutor:
-    """Python interpreter + live search (TAVILY_API_KEY from the environment)."""
+    """Python interpreter + live search (TAVILY_API_KEY from the environment).
+
+    HYBRID_SEARCH_PROVIDER=youcom switches search to You.com: keyless by default,
+    YDC_API_KEY for RL-scale volume.
+    """
     executor = ToolExecutor()
     executor.register_tool(PythonTool(python_path=sys.executable, timeout=python_timeout))
+    provider = os.environ.get("HYBRID_SEARCH_PROVIDER", "tavily").strip().lower()
     key = os.environ.get("TAVILY_API_KEY", "")
-    if key:
+    if provider in ("youcom", "you"):
+        executor.register_tool(RetryingSearchTool(YouComSearchTool(
+            max_results=search_max_results,
+            result_length=search_result_length,
+            max_retries=3,
+            retry_delay=2.0,
+        )))
+    elif key:
         executor.register_tool(RetryingSearchTool(TavilySearchTool(
             api_key=key,
             max_results=search_max_results,

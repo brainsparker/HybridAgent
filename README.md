@@ -32,6 +32,8 @@ pip install -e .
 cp .env.example .env   # TAVILY_API_KEY for the search tool
 ```
 
+Optional: set `HYBRID_SEARCH_PROVIDER=youcom` to use You.com search instead. It works without a key (100 searches/day per IP); set `YDC_API_KEY` for training volume.
+
 ## 📁 Repository
 
 | Directory | Contents |
